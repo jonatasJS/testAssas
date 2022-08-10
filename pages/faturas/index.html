@@ -1,0 +1,68 @@
+<form class="icarus-form js-add-customer-account-modal-form">
+  <div id="fieldsContainer">
+    <div class="control-box">
+      <div class="control-inline">
+        <div class="icarus-control-group">
+          <label class="control-label" for="name"> Nome </label>
+          <div class="controls">
+            <input
+              type="text"
+              id="name"
+              class="input-xxlarge has-error-message"
+              name="name"
+              validate-required="true"
+              placeholder="Informe o nome do cliente"
+            />
+          </div>
+        </div>
+        <span>ou</span>
+        <div class="icarus-control-group">
+          <label class="control-label" for="name"> CPF/CNPJ </label>
+          <div class="controls">
+            <input
+              type="text"
+              id="cpfCnpj"
+              class="input-xxlarge has-error-message"
+              name="cpfCnpj"
+              validate-required="true"
+              placeholder="Informe o seu CPF/CNPJ"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="submit">VERIFICAR</button>
+</form>
+
+<script>
+  const form = document.querySelector(".icarus-form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = form.querySelector("#name");
+    const cpfCnpj = form.querySelector("#cpfCnpj");
+    const formData = {
+      name: name.value,
+      cpfCnpj: cpfCnpj.value,
+    };
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    console.log(formData);
+    await fetch("http://177.126.95.20:3000/faturasabertas", {
+      method: "GET",
+      headers: headers,
+      body: JSON.stringify(formData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.id) {
+          const pre = document.createElement('pre')
+          pre.innerHTML = JSON.stringify(data, null, 2)
+          form.appendChild(pre);
+          alert("Cliente cadastrado com sucesso!");
+        } else alert("Erro ao cadastrar cliente!");
+      })  
+      .catch((error) => console.log(error));
+  });
+</script>

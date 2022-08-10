@@ -34,29 +34,37 @@ app.post("/clientesadd", async (req, res) => {
 });
 
 app.get("/faturasabertas", async (req, res) => {
-  const { name, cpfCnpj } = req.body || {
-    name: "",
-    cpfCnpj: "06161612127",
-  };
-  request(
-    {
-      method: "GET",
-      url: "https://www.asaas.com/api/v3/payments?customer=&billingType=&status=&subscription=&installment=&externalReference=&paymentDate=&pixQrCodeId=&anticipated=&paymentDate%5Bge%5D=&paymentDate%5Ble%5D=&dueDate%5Bge%5D=&dueDate%5Ble%5D=&offset=&limit=",
-      headers: {
-        "Content-Type": "application/json",
-        access_token: process.env.ASAAS_TOKEN,
-      },
-      body: JSON.stringify({
-        name: name,
-        cpfCnpj: cpfCnpj,
-      }),
-    },
-    function (error, response, body) {
-      if (error) return res.send(error);
-      console.log(body);
-      return res.send(body);
-    }
-  );
+  const { cpfCnpj } = req.body;
+  await request({
+        method: "GET",
+        url: `https://www.asaas.com/api/v3/customers?&cpfCnpj=${cpfCnpj}`,
+        headers: {
+          access_token: process.env.ASAAS_TOKEN,
+        },
+      }, async function (error, response, body) {
+        if (error) return res.send(error);
+        const { data } = JSON.parse(body);
+        
+        await request(
+          { // api/v3/payments?customer=cus_000031508525
+            method: "GET",
+            url: `https://www.asaas.com/api/v3/payments?customer=${data.customer}`,
+            headers: {
+              "Content-Type": "application/json",
+              access_token: process.env.ASAAS_TOKEN,
+            }
+          },
+          function (error, response, body) {
+            if (error) return res.send(error);
+            console.log(body);
+            return res.send({
+              body: JSON.parse(body),
+              response: response.statusCode,
+            });
+          }
+        );
+      })
+
 });
 
 
